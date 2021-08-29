@@ -36,7 +36,7 @@ namespace MailWebAPI.Controllers
         }
         [HttpPost]
         [Route("SendEmail")]
-        public async Task<ActionResult<IEnumerable<Mail>>> SendEmailAsync([FromBody] MailDTORequest mailRequest)
+        public async Task<ActionResult<IEnumerable<Mail>>> SendEmailAsync([FromForm] MailDTORequest mailRequest)
         {
             await _mailService.SendEmailAsync(mailRequest);
             return Created(nameof(mailRequest), mailRequest);

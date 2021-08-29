@@ -4,6 +4,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -39,8 +40,27 @@ namespace MailWebAPI.Services
             };
             email.To.Add(MailboxAddress.Parse(mailRequest.Recipient));
 
-            var builder = new BodyBuilder();
-            builder.HtmlBody = mailRequest.Body;
+            var builder = new BodyBuilder
+            {
+                HtmlBody = mailRequest.Body
+            };
+
+            if (mailRequest.Attachments != null)
+            {
+                byte[] fileBytes;
+                foreach (var file in mailRequest.Attachments)
+                {
+                    if (file.Length > 0)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            file.CopyTo(ms);
+                            fileBytes = ms.ToArray();
+                        }
+                        builder.Attachments.Add(file.FileName, fileBytes, ContentType.Parse(file.ContentType));
+                    }
+                }
+            }
             email.Body = builder.ToMessageBody();
 
             using (var smtp = new SmtpClient())
